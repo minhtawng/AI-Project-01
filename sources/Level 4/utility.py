@@ -33,14 +33,14 @@ def init(data=str()):
     data = data.replace('*', ' ')
 
     temp = data.split('=')  # Tách kết quả với các nhân tử
-    
+
     operands = temp[0].split(' ')  # Tách các nhân tử với nhau
     for i in range(0, len(operands)):
-        operands[i] = operands[i][::-1]
+        operands[i] = operands[i][::-1] # Reverse từng nhân tử
 
     global result
     result = temp[1]
-    result = result[::-1]
+    result = result[::-1] #Reverse kết quả
 
     # Một subtree tương ứng với một cột tính của phép toán nhân
 
