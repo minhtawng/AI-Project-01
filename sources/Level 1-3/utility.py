@@ -13,13 +13,36 @@ def toStr(li=dict()):
 
 
 # xử lí đọc input từ file
+# Kết hợp với việc gỡ ngoặc và đổi dấu toán tử
 def inputFrom(fileName=""):
     f = open(fileName)
 
     temp = f.read()
+
+    res = ""
+    SignReverse = 0
+    
+    for i in temp:
+        if i.isalpha():
+            res += i
+        else:
+            if i == '(':
+                SignReverse = 1
+                continue
+            if i == ')':
+                SignReverse = 0
+                continue
+            if SignReverse == 1:
+                if i == '+':
+                    res += '-'
+                else:
+                    if i == '-': res += '+'
+            else:
+                res += i
+
     f.close()
 
-    return temp
+    return res
 
 
 # Xử lí khởi tạo dữ liệu từ input data
@@ -107,7 +130,9 @@ def init(data=str()):
             neg = impact[i][char][1] + 1
             impact[i].update({char: (pos, neg)})
 
-    print(len(operands))
+    # print(len(operands))
+    # print(subtree)
+    # print(impact)
 
 
 # Kiểm tra assgin của subproblem có thỏa hay không
@@ -123,6 +148,8 @@ def SAT(problem=list(), assign=dict(), factor=dict(), preCarry=0):
 
     A = pos + preCarry
     B = neg
+    if A < 0: return None
+
     temp = A % 10 - B % 10
 
     if (temp == 0):
