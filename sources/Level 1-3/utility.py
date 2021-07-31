@@ -136,9 +136,14 @@ def init(data=str()):
             impact[i].update({char: (pos, neg)})
 
 
-    print("Input size:", len(data))
-    print("Number of operands:", len(operands))
-    print("Longest operand:", MaxLenOperand)
+    # print("Input size:", len(data))
+    # print("Number of operands:", len(operands))
+    # print("Longest operand:", MaxLenOperand)
+    # print(start)
+    # print(len(subtree))
+    # print(len(result))
+    # print(len(impact))
+    # print(operands)
 
 
 # Kiểm tra assgin của subproblem có thỏa hay không

@@ -34,9 +34,11 @@ def init(data=str()):
 
     temp = data.split('=')  # Tách kết quả với các nhân tử
 
-    operands = temp[0].split(' ')  # Tách các nhân tử với nhau
+    operands = temp[0].split(' ')  # Tách các nhân tử với nhau  
+    MaxLenOperand = 0
     for i in range(0, len(operands)):
         operands[i] = operands[i][::-1] # Reverse từng nhân tử
+        MaxLenOperand = max(MaxLenOperand, len(operands[i]))
 
     global result
     result = temp[1]
@@ -79,9 +81,9 @@ def init(data=str()):
         if result[i] not in subtree[i]:
             subtree[i].append(result[i])
 
-    # print(len(operands))
-    # print(subtree)
-    # print(impact)
+    # print("Input size:", len(data))
+    # print("Number of operands:", len(operands))
+    # print("Longest operand:", MaxLenOperand)
 
 
 # Kiểm tra assgin của subproblem có thỏa hay không
