@@ -21,24 +21,27 @@ def inputFrom(fileName=""):
 
     res = ""
     SignReverse = 0
-    
-    for i in temp:
-        if i.isalpha():
-            res += i
+
+    for i in range(0, len(temp)):
+        if temp[i].isalpha():
+            res += temp[i]
         else:
-            if i == '(':
-                SignReverse = 1
+            if temp[i] == '(':
+                if i > 0 and temp[i-1] == '-':
+                    SignReverse = 1
                 continue
-            if i == ')':
+            if temp[i] == ')':
                 SignReverse = 0
                 continue
+
             if SignReverse == 1:
-                if i == '+':
+                if temp[i] == '+':
                     res += '-'
                 else:
-                    if i == '-': res += '+'
+                    if temp[i] == '-':
+                        res += '+'
             else:
-                res += i
+                res += temp[i]
 
     f.close()
 
@@ -55,8 +58,7 @@ def init(data=str()):
     operators = list()  # Operators list
 
     # Mặc định thêm 1 dấu '+' vào danh sách toán tử nếu phần tử đầu tiên của data là chữ cái
-    if data[0] not in ('+', '-'):
-        operators.append('+')
+    operators.append('+')
 
     # Thêm các toán tử còn lại trong phép toán
     for char in data:
@@ -79,9 +81,11 @@ def init(data=str()):
 
     # impact là list có cùng size với subtree,
     # với mỗi phần tử là một dict chứa mức độ ảnh hưởng của các toán hạng trong subtree đó
-    tmp = len(result)
+    MaxLenOperand = 0
     for i in range(0, len(operands)):
-        tmp = max(tmp, len(operands[i]))
+        MaxLenOperand = max(MaxLenOperand, len(operands[i]))
+
+    tmp = max(len(result), MaxLenOperand)
 
     for i in range(0, tmp):
         subtree.append(list())
@@ -90,6 +94,7 @@ def init(data=str()):
     # Thêm các kí tự (node) của các toán hạng vào các subtree tương ứng
     for i in range(0, len(operands)):
         opr = operands[i]   # toán hạng thứ i trong list toán hạng
+
         for j in range(0, len(opr)):
             # Đánh dấu index ngược lại vì giải từ phải sang, nên subtree 0 là hàng đơn vị, 1 là hàng chục, ...
             id = len(opr) - j - 1
@@ -130,9 +135,10 @@ def init(data=str()):
             neg = impact[i][char][1] + 1
             impact[i].update({char: (pos, neg)})
 
-    # print(len(operands))
-    # print(subtree)
-    # print(impact)
+
+    print("Input size:", len(data))
+    print("Number of operands:", len(operands))
+    print("Longest operand:", MaxLenOperand)
 
 
 # Kiểm tra assgin của subproblem có thỏa hay không
@@ -146,9 +152,12 @@ def SAT(problem=list(), assign=dict(), factor=dict(), preCarry=0):
         pos = pos + assign[char]*factor[char][0]
         neg = neg + assign[char]*factor[char][1]
 
+
     A = pos + preCarry
     B = neg
-    if A < 0: return None
+    
+    if A < 0:
+        return None
 
     temp = A % 10 - B % 10
 
@@ -159,6 +168,7 @@ def SAT(problem=list(), assign=dict(), factor=dict(), preCarry=0):
 
 
 # Xử lí sub problem
+# solveSub[1]  0 1 2 3 4 5 six SP[2] SP[3] 
 def solveSub(idSP=int(), carry=int(), id=int(), localState=dict()):
     if id == len(subtree[idSP]):
         temp = SAT(subtree[idSP], localState, impact[idSP], carry)
@@ -194,7 +204,7 @@ def solveSub(idSP=int(), carry=int(), id=int(), localState=dict()):
 # Xử lí chính
 def Try(idSP=int(), state=dict(), carry=int()):
     if len(state) > 10:
-        return
+        return None
 
     if idSP == len(subtree):
         if carry == 0:

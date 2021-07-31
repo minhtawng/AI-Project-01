@@ -2,7 +2,8 @@ from utility import *
 
 data = inputFrom("input.txt")
 
-print(data)
+# print(data)
+
 
 init(data)
 
