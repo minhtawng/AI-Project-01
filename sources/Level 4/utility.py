@@ -13,32 +13,10 @@ def toStr(li=dict()):
 
 
 # xử lí đọc input từ file
-# Kết hợp với việc gỡ ngoặc và đổi dấu toán tử
 def inputFrom(fileName=""):
     f = open(fileName)
 
-    temp = f.read()
-
-    res = ""
-    SignReverse = 0
-    
-    for i in temp:
-        if i.isalpha():
-            res += i
-        else:
-            if i == '(':
-                SignReverse = 1
-                continue
-            if i == ')':
-                SignReverse = 0
-                continue
-            if SignReverse == 1:
-                if i == '+':
-                    res += '-'
-                else:
-                    if i == '-': res += '+'
-            else:
-                res += i
+    res = f.read()
 
     f.close()
 
@@ -52,83 +30,53 @@ def init(data=str()):
         if i.isalpha():
             start.update({i: -1})
 
-    operators = list()  # Operators list
+    data = data.replace('*', ' ')
 
-    # Mặc định thêm 1 dấu '+' vào danh sách toán tử nếu phần tử đầu tiên của data là chữ cái
-    if data[0] not in ('+', '-'):
-        operators.append('+')
+    temp = data.split('=')  # Tách kết quả với các nhân tử
+    operands = temp[0].split(' ')  # Tách các nhân tử với nhau
+    for i in range(0, len(operands)):
+        operands[i] = operands[i][::-1]
 
-    # Thêm các toán tử còn lại trong phép toán
-    for char in data:
-        if char in ('+', '-'):
-            operators.append(char)
-
-    # Sau khi đã lưu trữ, ta replace tất cả bằng ' ' để tiện cho việc split và
-    # xử lí lưu toán hạng về sau
-    data = data.replace('+', ' ')
-    data = data.replace('-', ' ')
-
-    temp = data.split('=')  # Tách kết quả với các toán hạng
-    operands = temp[0].split(' ')  # Tách các toán hạng với nhau
+    global result
     result = temp[1]
+    result = result[::-1]
 
-    # Một subtree tương ứng với một cột tính của phép toán
+    # Một subtree tương ứng với một cột tính của phép toán nhân
 
-    # Khởi tạo subtree là một list có size bằng với maximum độ dài của result và độ dài các toán hạng, trong đó
-    # mỗi phần tử của subtree là một list chứa các node của subtree đó
+    # Khởi tạo subtree là một list có size bằng với độ dài của result (vì level này chỉ tập trung giải quyết phép nhân với 2 nhân tử)
+    # trong đó, mỗi phần tử của subtree là một list chứa các node của subtree đó
 
     # impact là list có cùng size với subtree,
-    # với mỗi phần tử là một dict chứa mức độ ảnh hưởng của các toán hạng trong subtree đó
-    tmp = len(result)
-    for i in range(0, len(operands)):
-        tmp = max(tmp, len(operands[i]))
+    # với mỗi phần tử là một dict chứa mức độ ảnh hưởng của các kí tự (node) trong subtree đó
 
-    for i in range(0, tmp):
+    for i in range(0, len(result)):
         subtree.append(list())
         impact.append(dict())
 
-    # Thêm các kí tự (node) của các toán hạng vào các subtree tương ứng
-    for i in range(0, len(operands)):
-        opr = operands[i]   # toán hạng thứ i trong list toán hạng
-        for j in range(0, len(opr)):
-            # Đánh dấu index ngược lại vì giải từ phải sang, nên subtree 0 là hàng đơn vị, 1 là hàng chục, ...
-            id = len(opr) - j - 1
+    for i in range(0, len(operands[0])):
+        for j in range(0, len(operands[1])):
+            id = i + j
+            char1 = operands[0][i]
+            char2 = operands[1][j]
 
-            # Xử lí khi kí tự chưa được thêm vào dict
-            if not opr[j] in impact[id]:
-                if operators[i] == '+':
-                    pos = 1
-                    neg = 0
-                else:
-                    pos = 0
-                    neg = 1
+            if char1 not in subtree[id]:
+                subtree[id].append(char1)
+            if char2 not in subtree[id]:
+                subtree[id].append(char2)
 
-                subtree[id].append(opr[j])
-                impact[id].update({opr[j]: (pos, neg)})
+            if char1 not in impact[id]:
+                impact[id].update({char1: {char2: 1}})
             else:
-                # Ngược lại, xử lí khi kí tự đã được thêm vào dict
-                # Chỉ cần update tuple value của kí tự (key) được thêm vào dựa vào toán tử liền trước
-                pos = impact[id][opr[j]][0]
-                neg = impact[id][opr[j]][1]
-
-                if operators[i] == '+':
-                    pos = pos + 1
+                if char2 not in impact[id][char1]:
+                    impact[id][char1].update({char2: 1})
                 else:
-                    neg = neg + 1
-
-                impact[id].update({opr[j]: (pos, neg)})
+                    temp = impact[id][char1][char2] + 1
+                    impact[id][char1].update({char2: temp})
 
     # Thêm các kí tự (node) của result vào các subtree tương ứng
     for i in range(0, len(result)):
-        char = result[len(result)-i-1]
-
-        if char not in subtree[i]:
-            subtree[i].append(char)
-            impact[i].update({char: (0, 1)})
-        else:
-            pos = impact[i][char][0]
-            neg = impact[i][char][1] + 1
-            impact[i].update({char: (pos, neg)})
+        if result[i] not in subtree[i]:
+            subtree[i].append(result[i])
 
     # print(len(operands))
     # print(subtree)
@@ -138,22 +86,21 @@ def init(data=str()):
 # Kiểm tra assgin của subproblem có thỏa hay không
 # Nếu thỏa thì trả về carry
 # Ngược lại, None
-def SAT(problem=list(), assign=dict(), factor=dict(), preCarry=0):
+def SAT(problem=list(), assign=dict(), subRes="", factor=dict(), preCarry=0):
     pos = 0
-    neg = 0
 
-    for char in problem:
-        pos = pos + assign[char]*factor[char][0]
-        neg = neg + assign[char]*factor[char][1]
+    for char1 in problem:
+        if char1 in factor:
+            for item in factor[char1].items():
+                char2 = item[0]
+                imp = item[1]
 
-    A = pos + preCarry
-    B = neg
-    if A < 0: return None
+                pos += assign[char1]*assign[char2]*imp
 
-    temp = A % 10 - B % 10
+    pos += preCarry
 
-    if (temp == 0):
-        return int(A/10) - int(B/10)
+    if pos % 10 == assign[subRes]:
+        return int(pos/10)
 
     return None
 
@@ -161,7 +108,8 @@ def SAT(problem=list(), assign=dict(), factor=dict(), preCarry=0):
 # Xử lí sub problem
 def solveSub(idSP=int(), carry=int(), id=int(), localState=dict()):
     if id == len(subtree[idSP]):
-        temp = SAT(subtree[idSP], localState, impact[idSP], carry)
+        temp = SAT(subtree[idSP], localState,
+                   result[idSP], impact[idSP], carry)
 
         if temp != None:
             res = Try(idSP+1, localState, temp)
